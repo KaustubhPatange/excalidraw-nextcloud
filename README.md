@@ -56,6 +56,12 @@ NC_ROOT=/path/to/nextcloud curl -fsSL https://raw.githubusercontent.com/Kaustubh
 
 ---
 
+## Updating
+
+Re-running the install script or manual steps will update to the latest release. The script replaces the `excalidraw` folder under `custom_apps/` and leaves the MIME type mapping and app registration unchanged.
+
+---
+
 ## Building from Source
 
 Requirements: Node.js 20+
