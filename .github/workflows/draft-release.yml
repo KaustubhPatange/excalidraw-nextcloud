@@ -1,0 +1,68 @@
+name: Draft Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  draft-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Read version from package.json
+        id: version
+        run: echo "value=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Package app archive
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          mkdir -p /tmp/excalidraw
+          cp -r appinfo lib js LICENSE README.md /tmp/excalidraw/
+          tar -czf excalidraw-v${VERSION}.tar.gz -C /tmp excalidraw
+
+      - name: Check existing release
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.version.outputs.value }}
+        run: |
+          release=$(gh release view "$TAG" --json isDraft --jq '.isDraft' 2>/dev/null || echo "not_found")
+          echo "state=$release" >> $GITHUB_OUTPUT
+
+      - name: Delete existing draft release
+        if: steps.check.outputs.state == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.version.outputs.value }}
+        run: gh release delete "$TAG" --yes --cleanup-tag
+
+      - name: Create draft release
+        if: steps.check.outputs.state != 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.version.outputs.value }}
+        run: |
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --draft \
+            --generate-notes \
+            excalidraw-v${TAG#v}.tar.gz
