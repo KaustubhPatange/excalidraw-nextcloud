@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "build": "webpack --mode production",
-    "dev": "webpack --mode development --watch",
-    "sync": "node sync.mjs"
+    "dev": "webpack --mode development --watch"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "*",

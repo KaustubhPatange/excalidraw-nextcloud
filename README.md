@@ -1,44 +1,42 @@
 # Nextcloud Excalidraw
 
-A personal Nextcloud app that registers as a file handler for `.excalidraw` files. Clicking any `.excalidraw` file in the Files app opens a full-screen Excalidraw editor. Changes are automatically saved back to the file via WebDAV with a 2-second debounce.
+A personal Nextcloud app that registers as a file handler for `.excalidraw` files. Clicking any `.excalidraw` file in the Files app opens a full-screen Excalidraw editor. Changes are automatically saved back to the file via WebDAV with a 2-second debounce. The file is also saved when closing the editor.
 
 No collaboration, no Excalidraw Plus features. Built for personal use.
 
 Compatible with Nextcloud 28 to 30.
 
----
-
-## Requirements
-
-- Node.js 18+
-- A running Nextcloud instance with access to its `custom_apps/` directory
-
----
-
-## Building
-
-Install dependencies and build the frontend bundle:
-
-```
-npm install
-npm run build
-```
-
-This produces a `js/` directory containing the compiled bundle and Excalidraw fonts.
+<video src="assets/demo.mp4" controls width="100%"></video>
 
 ---
 
 ## Installing into Nextcloud
 
-1. Copy the entire app directory into your Nextcloud `custom_apps/` folder and name it `excalidraw`:
+### Option 1: Install script (recommended)
 
+Run the following command inside your Nextcloud container. It will download the latest release, extract it to `custom_apps/`, register the MIME type, and enable the app.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/KaustubhPatange/excalidraw-nextcloud/master/install.sh | bash
+```
+
+If your Nextcloud root is not `/var/www/html`, set `NC_ROOT` before running:
+
+```bash
+NC_ROOT=/path/to/nextcloud curl -fsSL https://raw.githubusercontent.com/KaustubhPatange/excalidraw-nextcloud/master/install.sh | bash
+```
+
+### Option 2: Manual steps
+
+1. Download the latest `excalidraw-v*.tar.gz` from the [Releases](https://github.com/KaustubhPatange/excalidraw-nextcloud/releases) page.
+
+2. Extract it into your Nextcloud `custom_apps/` directory. The archive extracts to a folder named `excalidraw`, which is required:
+
+   ```bash
+   tar -xzf excalidraw-v*.tar.gz -C /var/www/html/custom_apps
    ```
-   cp -rp /path/to/nextcloud-excalidraw /path/to/nextcloud/custom_apps/excalidraw
-   ```
 
-   The app ID is `excalidraw`, so the folder name must match exactly.
-
-2. Register the `.excalidraw` MIME type so Nextcloud recognizes the file format. Add the following to `config/mimetypemapping.json` in your Nextcloud root (create the file if it does not exist):
+3. Register the `.excalidraw` MIME type. Add the following to `config/mimetypemapping.json` in your Nextcloud root (create the file if it does not exist):
 
    ```json
    {
@@ -46,19 +44,28 @@ This produces a `js/` directory containing the compiled bundle and Excalidraw fo
    }
    ```
 
-3. Enable the app via the Nextcloud CLI:
+   If the file already contains other entries, add the `excalidraw` key alongside them.
 
-   ```
-   php occ app:enable excalidraw
+4. Enable the app:
+
+   ```bash
+   php /var/www/html/occ app:enable excalidraw
    ```
 
    Or enable it through the Admin panel under Apps > Your Apps.
 
-4. If Nextcloud is running inside Docker and the `custom_apps/` directory is bind-mounted to the host, copy the built `js/` output into the app's folder on the host after each build:
+---
 
-   ```
-   cp -rp js/ /path/to/nextcloud/custom_apps/excalidraw/js/
-   ```
+## Building from Source
+
+Requirements: Node.js 20+
+
+```bash
+npm install
+npm run build
+```
+
+This produces a `js/` directory containing the compiled bundle and Excalidraw fonts. To install the built output manually, copy the app directory into `custom_apps/excalidraw/` and follow steps 3 and 4 from the manual install above.
 
 ---
 
@@ -66,14 +73,8 @@ This produces a `js/` directory containing the compiled bundle and Excalidraw fo
 
 Run webpack in watch mode to rebuild on every file change:
 
-```
+```bash
 npm run dev
-```
-
-To automatically sync the built `js/` output to your Nextcloud instance after each rebuild, run the sync script in a separate terminal. Update the destination path inside `sync.mjs` to point to your Nextcloud `custom_apps/excalidraw/js/` directory, then run:
-
-```
-npm run sync
 ```
 
 ---
@@ -82,5 +83,5 @@ npm run sync
 
 - `appinfo/info.xml` declares the app metadata and Nextcloud version constraints.
 - `lib/AppInfo/Application.php` registers an event listener on `LoadAdditionalScriptsEvent`, which fires whenever the Nextcloud Files page loads. The listener injects the compiled JS bundle into the page.
-- `src/fileaction.jsx` registers a `FileAction` with the Nextcloud Files API that matches any file ending in `.excalidraw`. When triggered, it mounts a full-screen React overlay containing the Excalidraw component. The file is loaded via a WebDAV GET request and saved via WebDAV PUT on every change (debounced 2 seconds).
+- `src/fileaction.jsx` registers a `FileAction` with the Nextcloud Files API that matches any file ending in `.excalidraw`. When triggered, it mounts a full-screen React overlay containing the Excalidraw component. The file is loaded via a WebDAV GET request and saved via WebDAV PUT on every change (debounced 2 seconds) and again when the editor is closed.
 - Fonts are bundled locally under `js/fonts/` and served from the same origin to satisfy Nextcloud's Content Security Policy.
