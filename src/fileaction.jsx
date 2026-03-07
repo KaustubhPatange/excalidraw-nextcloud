@@ -234,7 +234,9 @@ function openExcalidrawEditor(filePath) {
   const overlay = document.createElement('div')
   overlay.style.cssText =
     'position:fixed;inset:0;z-index:9999;background:#fff;display:flex;flex-direction:column;'
+  overlay.tabIndex = -1
   document.body.appendChild(overlay)
+  overlay.focus()
 
   const styleEl = document.createElement('style')
   styleEl.textContent = `.excalidraw { --color-selection: #4dabf7 !important; }`
