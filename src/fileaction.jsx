@@ -239,7 +239,10 @@ function openExcalidrawEditor(filePath) {
   overlay.focus()
 
   const styleEl = document.createElement('style')
-  styleEl.textContent = `.excalidraw { --color-selection: #4dabf7 !important; }`
+  styleEl.textContent = `
+    .excalidraw { --color-selection: #4dabf7 !important; }
+    .excalidraw-modal-container { z-index: 10000 !important; }
+  `
   document.head.appendChild(styleEl)
 
   const close = () => {
