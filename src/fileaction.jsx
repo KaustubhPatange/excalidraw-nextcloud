@@ -224,12 +224,20 @@ function ExcalidrawEditor({ filePath, userId, onClose }) {
   )
 }
 
-function openExcalidrawEditor(filePath) {
+function openExcalidrawEditor(filePath, fileId, dir) {
   const user = getCurrentUser()
   if (!user) {
     console.error('[excalidraw] could not get current user')
     return
   }
+
+  const fileUrl = fileId
+    ? `/apps/files/files/${fileId}?dir=${encodeURIComponent(dir || '/')}&openfile=true`
+    : null
+  const cleanUrl = fileId
+    ? `/apps/files/files/${fileId}?dir=${encodeURIComponent(dir || '/')}`
+    : null
+  history.pushState({ excalidrawOpen: true }, '', fileUrl)
 
   const overlay = document.createElement('div')
   overlay.style.cssText =
@@ -245,15 +253,33 @@ function openExcalidrawEditor(filePath) {
   `
   document.head.appendChild(styleEl)
 
+  let closed = false
   const close = () => {
+    if (closed) return
+    closed = true
+    window.removeEventListener('popstate', onPopState)
     root.unmount()
     overlay.remove()
     styleEl.remove()
   }
 
+  // Back button: browser already restored the previous URL, just tear down the overlay
+  const onPopState = () => close()
+  window.addEventListener('popstate', onPopState)
+
+  // Close button: stay on the files page but strip openfile=true from the URL
+  const closeFromButton = () => {
+    close()
+    if (cleanUrl) history.replaceState({}, '', cleanUrl)
+  }
+
   const root = ReactDOM.createRoot(overlay)
   root.render(
-    <ExcalidrawEditor filePath={filePath} userId={user.uid} onClose={close} />,
+    <ExcalidrawEditor
+      filePath={filePath}
+      userId={user.uid}
+      onClose={closeFromButton}
+    />,
   )
 }
 
@@ -266,7 +292,7 @@ registerFileAction(
     enabled: (files) =>
       files.length === 1 && files[0].basename.endsWith('.excalidraw'),
     async exec(file) {
-      openExcalidrawEditor(file.path)
+      openExcalidrawEditor(file.path, file.fileid, file.dirname)
       return null
     },
     default: 'default',
