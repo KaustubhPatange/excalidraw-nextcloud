@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<info>
+	<id>excalidraw</id>
+	<name>Excalidraw</name>
+	<summary>Edit Excalidraw diagrams directly in your browser.</summary>
+	<description>Open and edit .excalidraw files with the Excalidraw editor. Changes are automatically saved back to your Nextcloud files.</description>
+	<version>1.0.0</version>
+	<licence>agpl</licence>
+	<author>Personal</author>
+	<namespace>Excalidraw</namespace>
+	<types>
+		<prevent_group_restriction/>
+	</types>
+	<category>files</category>
+	<dependencies>
+		<nextcloud min-version="28" max-version="30"/>
+	</dependencies>
+</info>
