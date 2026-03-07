@@ -16,6 +16,12 @@ function debounce(fn, delay) {
   }
 }
 
+function getFingerprint(elements, files) {
+  const elFp = elements.map((e) => `${e.id}:${e.version}`).join(',')
+  const filesFp = Object.keys(files || {}).sort().join(',')
+  return `${elFp}|${filesFp}`
+}
+
 function ExcalidrawEditor({ filePath, userId, onClose }) {
   const [initialData, setInitialData] = useState(null)
   const [saveStatus, setSaveStatus] = useState('idle') // 'idle' | 'saving' | 'saved' | 'error'
@@ -83,6 +89,16 @@ function ExcalidrawEditor({ filePath, userId, onClose }) {
   // Track latest canvas state so we can flush a save on close
   const latestStateRef = useRef(null)
   const hasChangesRef = useRef(false)
+  const fingerprintRef = useRef(null)
+
+  useEffect(() => {
+    if (initialData) {
+      fingerprintRef.current = getFingerprint(
+        initialData.elements,
+        initialData.files,
+      )
+    }
+  }, [initialData])
 
   const handleClose = useCallback(async () => {
     if (hasChangesRef.current && latestStateRef.current) {
@@ -152,6 +168,9 @@ function ExcalidrawEditor({ filePath, userId, onClose }) {
     <Excalidraw
       initialData={initialData}
       onChange={(elements, appState, files) => {
+        const fp = getFingerprint(elements, files)
+        if (fp === fingerprintRef.current) return
+        fingerprintRef.current = fp
         latestStateRef.current = { elements, appState, files }
         hasChangesRef.current = true
         debouncedSave(elements, appState, files)
