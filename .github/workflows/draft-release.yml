@@ -5,6 +5,10 @@ on:
     branches:
       - master
 
+concurrency:
+  group: draft-release
+  cancel-in-progress: true
+
 jobs:
   draft-release:
     runs-on: ubuntu-latest

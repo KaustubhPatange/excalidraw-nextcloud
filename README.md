@@ -6,7 +6,7 @@ No collaboration, no Excalidraw Plus features. Built for personal use.
 
 Compatible with Nextcloud 28 to 30.
 
-<video src="assets/demo.mp4" controls width="100%"></video>
+https://github.com/user-attachments/assets/2fabc161-1524-4a8d-92fb-3b2af0f3fde6
 
 ---
 
