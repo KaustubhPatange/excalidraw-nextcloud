@@ -250,6 +250,7 @@ function openExcalidrawEditor(filePath, fileId, dir) {
   styleEl.textContent = `
     .excalidraw { --color-selection: #4dabf7 !important; }
     .excalidraw-modal-container { z-index: 10000 !important; }
+    .excalidraw-wysiwyg { border: none !important; outline: none !important; box-shadow: none !important; background: transparent !important; border-radius: 0 !important; padding: 0 !important; margin: 0 !important; }
   `
   document.head.appendChild(styleEl)
 
